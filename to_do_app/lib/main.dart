@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
+import 'modal/items.dart';
 import 'widgets/card_body_widget.dart';
+import 'widgets/card_model_button.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -10,8 +11,29 @@ void main() {
   ));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final List<DataItems> items = [];
+
+  void _handleAddTask(String name) {
+    var id = items.isEmpty ? 1 : items.length + 1;
+    final newItem = DataItems(id: id.toString(), name: name);
+    setState(() {
+      items.add(newItem);
+    });
+  }
+
+  void _handleDeleteTask(String id) {
+    setState(() {
+      items.removeWhere((item) => item.id == id);
+    });
+  }
 
   // This widget is the root of your application.
   @override
@@ -27,43 +49,25 @@ class MyApp extends StatelessWidget {
         ),
         backgroundColor: Colors.blue,
       ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
-          children: [CardBody()],
+          children: items
+              .map((item) => CardBody(
+                    item: item,
+                    handleDelete: _handleDeleteTask,
+                  ))
+              .toList(),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
+              backgroundColor: Colors.grey[200],
+              isScrollControlled: true,
               context: context,
               builder: (BuildContext content) {
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  height: 200,
-                  color: Colors.amber,
-                  child: const Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Your Task',
-                        ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: Text('Add Task'),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                return ModelButton(addTask: _handleAddTask);
               });
         },
         backgroundColor: Colors.blue,
